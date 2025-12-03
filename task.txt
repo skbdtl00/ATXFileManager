@@ -1,0 +1,94 @@
+## **1️⃣ Core Features (10–15)**
+
+Basic file manager tools:
+
+* Upload / download / view / move / copy
+* Rename, delete
+* Create folder
+* Search (smart) (pre-search by cron enabled choice by admin)
+* Sort & filter
+* Drag and drop
+
+---
+
+## 2️⃣ **Advanced File Tools (10–15)**
+
+Stuff regular file managers don't have:
+
+* Archive ZIP/TAR creation
+* Extract ZIP/TAR/7z
+* File hashing (MD5/SHA256)
+* Multi-select actions
+* Clipboard for operations
+* Recursive folder size calculator
+* File tagging
+* Image thumbnail generation
+* Text/code editor (syntax highlight) (already have)
+* PDF viewer
+* Video transcoding (optional)
+
+---
+
+## 3️⃣ **Security & Permission System (10+)**
+
+Business-grade features:
+
+* Role-based access control (RBAC)
+* Per-file permissions
+* Expiring share links
+* IP restrictions
+* Password-protected folders
+* Audit logs
+* All activities logs
+* Two-factor auth (optional)
+* Encryption at rest
+
+---
+
+## 4️⃣ **Cloud & Storage Integrations (6+)**
+
+Support for:
+
+* S3 / S3 Compatible
+* FTP / SFTP
+* Local storage
+* Multi-storage mount system
+* Automatic backup to secondary storage (FTP/SFTP/S3/S3 COMPAT)
+* Signed URLs
+
+---
+
+## 5️⃣ **Automation (5–10)**
+
+High-end automation features:
+
+* Auto-backup scheduling
+* Cleanup expired files
+* Cron-like UI
+* Duplicate file detection
+* Auto virus scan (ClamAV)
+* Webhook triggers (upload/delete events)
+
+---
+
+## 6️⃣ **Admin Panel Features (10+)**
+
+* User management
+* Storage quota per user
+* Subscription system (like plesk)
+* Admin dashboard (graphs)
+* File indexing engine
+* Server resource usage view
+* Multi-tenant system
+* API key management
+
+Do it your best:
+In-app file converter (20+ extension from image to documents and more)
+And basic photo editor (crop, cut, stretch, resize, more)
+
+Requirements:
+Node.JS, Express, PostgreSQL, Redis
+Logo: 20250811_142916.png
+UI: file-manager-ui.zip
+
+And a installation automation script (for all of popular linux distro)
