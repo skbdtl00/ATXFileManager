@@ -1,10 +1,9 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
+import { Request, Response } from 'express';
 import { query } from '../config/database';
 import logger from '../utils/logger';
 
 export class AdminController {
-  async getDashboard(req: AuthRequest, res: Response) {
+  async getDashboard(_req: Request, res: Response): Promise<void> {
     try {
       // Get system statistics
       const userStats = await query(
@@ -55,7 +54,7 @@ export class AdminController {
     }
   }
 
-  async listUsers(req: AuthRequest, res: Response) {
+  async listUsers(req: Request, res: Response): Promise<void> {
     try {
       const { page = 1, limit = 20, search, role } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
@@ -116,7 +115,7 @@ export class AdminController {
     }
   }
 
-  async updateUser(req: AuthRequest, res: Response) {
+  async updateUser(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { role, storage_quota, is_active } = req.body;
@@ -144,7 +143,7 @@ export class AdminController {
       }
 
       if (updates.length === 0) {
-        return res.status(400).json({ error: 'No valid updates provided' });
+        res.status(400).json({ error: 'No valid updates provided' });
       }
 
       params.push(id);
@@ -154,7 +153,7 @@ export class AdminController {
       );
 
       if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'User not found' });
+        res.status(404).json({ error: 'User not found' });
       }
 
       // Log audit
@@ -173,14 +172,14 @@ export class AdminController {
     }
   }
 
-  async deleteUser(req: AuthRequest, res: Response) {
+  async deleteUser(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
       // Check if user exists
       const userResult = await query('SELECT * FROM users WHERE id = $1', [id]);
       if (userResult.rows.length === 0) {
-        return res.status(404).json({ error: 'User not found' });
+        res.status(404).json({ error: 'User not found' });
       }
 
       // Delete user (cascade will delete related data)
@@ -201,7 +200,7 @@ export class AdminController {
     }
   }
 
-  async getAuditLogs(req: AuthRequest, res: Response) {
+  async getAuditLogs(req: Request, res: Response): Promise<void> {
     try {
       const { page = 1, limit = 50, action, userId } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
@@ -262,7 +261,7 @@ export class AdminController {
     }
   }
 
-  async getSystemStats(req: AuthRequest, res: Response) {
+  async getSystemStats(_req: Request, res: Response): Promise<void> {
     try {
       const stats = await query(`
         SELECT 
@@ -282,7 +281,7 @@ export class AdminController {
     }
   }
 
-  async getStorageReport(req: AuthRequest, res: Response) {
+  async getStorageReport(_req: Request, res: Response): Promise<void> {
     try {
       const report = await query(`
         SELECT 

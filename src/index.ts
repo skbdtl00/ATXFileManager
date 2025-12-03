@@ -5,7 +5,7 @@ import compression from 'compression';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import { config } from './config/env';
-import { connectRedis } from './config/redis';
+import { connectRedis, redisClient } from './config/redis';
 import pool from './config/database';
 import logger from './utils/logger';
 import { errorHandler, notFound } from './middleware/errorHandler';
@@ -41,7 +41,7 @@ app.use(morgan('combined', {
 app.use('/api', generalLimiter);
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),

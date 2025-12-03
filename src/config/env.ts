@@ -24,10 +24,10 @@ export const config = {
   },
   
   jwt: {
-    secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key',
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-    refreshSecret: process.env.REFRESH_TOKEN_SECRET || 'your-refresh-secret',
-    refreshExpiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || '30d',
+    secret: (process.env.JWT_SECRET || 'your-super-secret-jwt-key') as string,
+    expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as string,
+    refreshSecret: (process.env.REFRESH_TOKEN_SECRET || 'your-refresh-secret') as string,
+    refreshExpiresIn: (process.env.REFRESH_TOKEN_EXPIRES_IN || '30d') as string,
   },
   
   session: {
