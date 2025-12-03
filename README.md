@@ -80,6 +80,10 @@ A comprehensive, enterprise-grade file management system built with Node.js, Exp
 For supported Linux distributions (Ubuntu, Debian, CentOS, Fedora, Arch):
 
 ```bash
+apt update && apt upgrade -y
+apt install git curl -y
+git clone https://github.com/skbdtl00/ATXFileManager.git
+cd ATXFileManager
 chmod +x install.sh
 sudo ./install.sh
 ```
