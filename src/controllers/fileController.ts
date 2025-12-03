@@ -12,10 +12,12 @@ export class FileController {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
         return;
+        return;
       }
 
       if (!req.file) {
         res.status(400).json({ error: 'No file uploaded' });
+        return;
         return;
       }
 
@@ -32,6 +34,7 @@ export class FileController {
         // Delete uploaded file
         await fs.unlink(req.file.path);
         res.status(400).json({ error: 'Storage quota exceeded' });
+        return;
       }
 
       const file = await fileService.createFile({
@@ -68,6 +71,7 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Upload error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -75,6 +79,7 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
+        return;
         return;
       }
 
@@ -89,6 +94,7 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Get files error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -97,27 +103,6 @@ export class FileController {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
         return;
-      }
-
-      const { id } = req.params;
-
-      const file = await fileService.getFile(id);
-
-      if (file.user_id !== req.user!.userId) {
-        res.status(403).json({ error: 'Access denied' });
-      }
-
-      res.json({ file });
-    } catch (error: any) {
-      logger.error(`Get file error: ${error.message}`);
-      res.status(400).json({ error: error.message });
-    }
-  }
-
-  async downloadFile(req: Request, res: Response): Promise<void> {
-    try {
-      if (!req.user) {
-        res.status(401).json({ error: 'Authentication required' });
         return;
       }
 
@@ -127,10 +112,37 @@ export class FileController {
 
       if (file.user_id !== req.user!.userId) {
         res.status(403).json({ error: 'Access denied' });
+        return;
+      }
+
+      res.json({ file });
+    } catch (error: any) {
+      logger.error(`Get file error: ${error.message}`);
+      res.status(400).json({ error: error.message });
+        return;
+    }
+  }
+
+  async downloadFile(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Authentication required' });
+        return;
+        return;
+      }
+
+      const { id } = req.params;
+
+      const file = await fileService.getFile(id);
+
+      if (file.user_id !== req.user!.userId) {
+        res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       if (file.type === 'folder') {
         res.status(400).json({ error: 'Cannot download a folder directly' });
+        return;
       }
 
       const filePath = path.join(config.storage.path, file.path);
@@ -145,6 +157,7 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Download error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -152,6 +165,7 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
+        return;
         return;
       }
 
@@ -177,6 +191,7 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Create folder error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -184,6 +199,7 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
+        return;
         return;
       }
 
@@ -194,6 +210,7 @@ export class FileController {
 
       if (file.user_id !== req.user!.userId) {
         res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       const updatedFile = await fileService.updateFile(id, { name });
@@ -211,6 +228,7 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Rename error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -218,6 +236,7 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
+        return;
         return;
       }
 
@@ -228,6 +247,7 @@ export class FileController {
 
       if (file.user_id !== req.user!.userId) {
         res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       await fileService.deleteFile(id, permanent === 'true');
@@ -242,6 +262,7 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Delete error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -249,6 +270,7 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
+        return;
         return;
       }
 
@@ -259,6 +281,7 @@ export class FileController {
 
       if (file.user_id !== req.user!.userId) {
         res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       const movedFile = await fileService.moveFile(id, targetParentId);
@@ -276,6 +299,7 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Move error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -283,6 +307,7 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
+        return;
         return;
       }
 
@@ -293,6 +318,7 @@ export class FileController {
 
       if (file.user_id !== req.user!.userId) {
         res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       const copiedFile = await fileService.copyFile(id, targetParentId, req.user!.userId);
@@ -310,6 +336,7 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Copy error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -318,12 +345,14 @@ export class FileController {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
         return;
+        return;
       }
 
       const { q } = req.query;
 
       if (!q) {
         res.status(400).json({ error: 'Search query required' });
+        return;
       }
 
       const files = await fileService.searchFiles(req.user!.userId, q as string);
@@ -332,6 +361,7 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Search error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -339,6 +369,7 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
+        return;
         return;
       }
 
@@ -348,6 +379,7 @@ export class FileController {
 
       if (file.user_id !== req.user!.userId) {
         res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       const updatedFile = await fileService.updateFile(id, { is_starred: !file.is_starred });
@@ -359,6 +391,7 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Star error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -366,6 +399,7 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
+        return;
         return;
       }
 
@@ -375,10 +409,12 @@ export class FileController {
 
       if (file.user_id !== req.user!.userId) {
         res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       if (file.type !== 'folder') {
         res.status(400).json({ error: 'Not a folder' });
+        return;
       }
 
       const size = await fileService.calculateFolderSize(id);
@@ -387,6 +423,7 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Get folder size error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -394,6 +431,7 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
+        return;
         return;
       }
 
@@ -404,6 +442,7 @@ export class FileController {
 
       if (file.user_id !== req.user!.userId) {
         res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       await fileService.addTag(id, tag);
@@ -412,6 +451,7 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Add tag error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -419,6 +459,7 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
+        return;
         return;
       }
 
@@ -428,6 +469,7 @@ export class FileController {
 
       if (file.user_id !== req.user!.userId) {
         res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       const tags = await fileService.getTags(id);
@@ -436,6 +478,7 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Get tags error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -443,6 +486,7 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
+        return;
         return;
       }
 
@@ -452,6 +496,7 @@ export class FileController {
 
       if (file.user_id !== req.user!.userId) {
         res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       await fileService.removeTag(id, tag);
@@ -460,6 +505,7 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Remove tag error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 }

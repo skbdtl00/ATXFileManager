@@ -51,6 +51,7 @@ export class AdminController {
     } catch (error: any) {
       logger.error(`Admin dashboard error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -112,6 +113,7 @@ export class AdminController {
     } catch (error: any) {
       logger.error(`List users error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -144,6 +146,7 @@ export class AdminController {
 
       if (updates.length === 0) {
         res.status(400).json({ error: 'No valid updates provided' });
+        return;
       }
 
       params.push(id);
@@ -154,6 +157,7 @@ export class AdminController {
 
       if (result.rows.length === 0) {
         res.status(404).json({ error: 'User not found' });
+        return;
       }
 
       // Log audit
@@ -169,6 +173,7 @@ export class AdminController {
     } catch (error: any) {
       logger.error(`Update user error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -180,6 +185,7 @@ export class AdminController {
       const userResult = await query('SELECT * FROM users WHERE id = $1', [id]);
       if (userResult.rows.length === 0) {
         res.status(404).json({ error: 'User not found' });
+        return;
       }
 
       // Delete user (cascade will delete related data)
@@ -197,6 +203,7 @@ export class AdminController {
     } catch (error: any) {
       logger.error(`Delete user error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -258,6 +265,7 @@ export class AdminController {
     } catch (error: any) {
       logger.error(`Get audit logs error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -278,6 +286,7 @@ export class AdminController {
     } catch (error: any) {
       logger.error(`Get system stats error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -303,6 +312,7 @@ export class AdminController {
     } catch (error: any) {
       logger.error(`Get storage report error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 }

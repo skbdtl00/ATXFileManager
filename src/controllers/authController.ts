@@ -37,6 +37,7 @@ export class AuthController {
     } catch (error: any) {
       logger.error(`Registration error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -77,6 +78,7 @@ export class AuthController {
     } catch (error: any) {
       logger.error(`Login error: ${error.message}`);
       res.status(401).json({ error: error.message });
+        return;
     }
   }
 
@@ -94,6 +96,7 @@ export class AuthController {
     } catch (error: any) {
       logger.error(`2FA verification error: ${error.message}`);
       res.status(401).json({ error: error.message });
+        return;
     }
   }
 
@@ -101,6 +104,7 @@ export class AuthController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const result = await authService.setupTwoFactor(req.user!.userId);
@@ -113,6 +117,7 @@ export class AuthController {
     } catch (error: any) {
       logger.error(`2FA setup error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -120,6 +125,7 @@ export class AuthController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { token } = req.body;
@@ -130,6 +136,7 @@ export class AuthController {
     } catch (error: any) {
       logger.error(`2FA enable error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -137,6 +144,7 @@ export class AuthController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       await authService.disableTwoFactor(req.user!.userId);
@@ -145,6 +153,7 @@ export class AuthController {
     } catch (error: any) {
       logger.error(`2FA disable error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -152,6 +161,7 @@ export class AuthController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { oldPassword, newPassword } = req.body;
@@ -162,6 +172,7 @@ export class AuthController {
     } catch (error: any) {
       logger.error(`Password change error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
@@ -169,6 +180,7 @@ export class AuthController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const result = await query(
@@ -180,12 +192,14 @@ export class AuthController {
 
       if (result.rows.length === 0) {
         res.status(404).json({ error: 'User not found' });
+        return;
       }
 
       res.json({ user: result.rows[0] });
     } catch (error: any) {
       logger.error(`Get profile error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 }
