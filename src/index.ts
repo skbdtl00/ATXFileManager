@@ -72,7 +72,9 @@ const startServer = async () => {
     logger.info('✅ Scheduled jobs loaded');
 
     // Create necessary directories
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const fs = require('fs');
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const path = require('path');
     
     const dirs = [
