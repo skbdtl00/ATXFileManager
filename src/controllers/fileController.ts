@@ -12,12 +12,10 @@ export class FileController {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
         return;
-        return;
       }
 
       if (!req.file) {
         res.status(400).json({ error: 'No file uploaded' });
-        return;
         return;
       }
 
@@ -80,7 +78,6 @@ export class FileController {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
         return;
-        return;
       }
 
       const { parentId } = req.query;
@@ -102,7 +99,6 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
-        return;
         return;
       }
 
@@ -127,7 +123,6 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
-        return;
         return;
       }
 
@@ -166,7 +161,6 @@ export class FileController {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
         return;
-        return;
       }
 
       const { name, parentId } = req.body;
@@ -199,7 +193,6 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
-        return;
         return;
       }
 
@@ -237,7 +230,6 @@ export class FileController {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
         return;
-        return;
       }
 
       const { id } = req.params;
@@ -270,7 +262,6 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
-        return;
         return;
       }
 
@@ -308,7 +299,6 @@ export class FileController {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
         return;
-        return;
       }
 
       const { id } = req.params;
@@ -345,7 +335,6 @@ export class FileController {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
         return;
-        return;
       }
 
       const { q } = req.query;
@@ -369,7 +358,6 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
-        return;
         return;
       }
 
@@ -399,7 +387,6 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
-        return;
         return;
       }
 
@@ -432,7 +419,6 @@ export class FileController {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
         return;
-        return;
       }
 
       const { id } = req.params;
@@ -460,7 +446,6 @@ export class FileController {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
         return;
-        return;
       }
 
       const { id } = req.params;
@@ -486,7 +471,6 @@ export class FileController {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' });
-        return;
         return;
       }
 
