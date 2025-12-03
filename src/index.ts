@@ -14,6 +14,10 @@ import { generalLimiter } from './middleware/rateLimiter';
 // Routes
 import authRoutes from './routes/auth';
 import fileRoutes from './routes/files';
+import adminRoutes from './routes/admin';
+
+// Services
+import jobService from './services/jobService';
 
 const app = express();
 
@@ -47,6 +51,7 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/files', fileRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Error handling
 app.use(notFound);
@@ -61,6 +66,10 @@ const startServer = async () => {
 
     // Connect to Redis
     await connectRedis();
+
+    // Load scheduled jobs
+    await jobService.loadScheduledJobs();
+    logger.info('✅ Scheduled jobs loaded');
 
     // Create necessary directories
     const fs = require('fs');
