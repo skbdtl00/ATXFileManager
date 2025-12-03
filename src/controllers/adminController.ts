@@ -86,11 +86,23 @@ export class AdminController {
 
       const users = await query(queryText, params);
 
-      const countQuery = await query(
-        'SELECT COUNT(*) FROM users WHERE 1=1' + 
-        (search ? ` AND (email ILIKE '%${search}%' OR username ILIKE '%${search}%')` : '') +
-        (role ? ` AND role = '${role}'` : '')
-      );
+      // Build count query with parameters
+      let countQueryText = 'SELECT COUNT(*) FROM users WHERE 1=1';
+      const countParams: any[] = [];
+      let countParamIndex = 1;
+
+      if (search) {
+        countQueryText += ` AND (email ILIKE $${countParamIndex} OR username ILIKE $${countParamIndex} OR full_name ILIKE $${countParamIndex})`;
+        countParams.push(`%${search}%`);
+        countParamIndex++;
+      }
+
+      if (role) {
+        countQueryText += ` AND role = $${countParamIndex}`;
+        countParams.push(role);
+      }
+
+      const countQuery = await query(countQueryText, countParams);
 
       res.json({
         users: users.rows,
@@ -220,11 +232,23 @@ export class AdminController {
 
       const logs = await query(queryText, params);
 
-      const countQuery = await query(
-        'SELECT COUNT(*) FROM audit_logs WHERE 1=1' +
-        (action ? ` AND action = '${action}'` : '') +
-        (userId ? ` AND user_id = '${userId}'` : '')
-      );
+      // Build count query with parameters
+      let countQueryText = 'SELECT COUNT(*) FROM audit_logs WHERE 1=1';
+      const countParams: any[] = [];
+      let countParamIndex = 1;
+
+      if (action) {
+        countQueryText += ` AND action = $${countParamIndex}`;
+        countParams.push(action);
+        countParamIndex++;
+      }
+
+      if (userId) {
+        countQueryText += ` AND user_id = $${countParamIndex}`;
+        countParams.push(userId);
+      }
+
+      const countQuery = await query(countQueryText, countParams);
 
       res.json({
         logs: logs.rows,

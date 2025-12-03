@@ -68,7 +68,10 @@ export class ArchiveService {
 
   async extractTar(tarPath: string, outputDir: string): Promise<void> {
     try {
-      await execPromise(`tar -xzf "${tarPath}" -C "${outputDir}"`);
+      // Sanitize paths to prevent command injection
+      const safeTarPath = tarPath.replace(/[;&|`$()]/g, '');
+      const safeOutputDir = outputDir.replace(/[;&|`$()]/g, '');
+      await execPromise(`tar -xzf "${safeTarPath}" -C "${safeOutputDir}"`);
     } catch (error) {
       throw new Error(`Failed to extract tar: ${error}`);
     }
@@ -76,7 +79,10 @@ export class ArchiveService {
 
   async extract7z(archivePath: string, outputDir: string): Promise<void> {
     try {
-      await execPromise(`7z x "${archivePath}" -o"${outputDir}" -y`);
+      // Sanitize paths to prevent command injection
+      const safeArchivePath = archivePath.replace(/[;&|`$()]/g, '');
+      const safeOutputDir = outputDir.replace(/[;&|`$()]/g, '');
+      await execPromise(`7z x "${safeArchivePath}" -o"${safeOutputDir}" -y`);
     } catch (error) {
       throw new Error(`Failed to extract 7z: ${error}`);
     }

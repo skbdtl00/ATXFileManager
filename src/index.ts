@@ -116,6 +116,7 @@ process.on('SIGINT', async () => {
   logger.info('SIGINT received, shutting down gracefully');
   
   await pool.end();
+  await redisClient.disconnect();
   
   process.exit(0);
 });

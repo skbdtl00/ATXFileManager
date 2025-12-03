@@ -213,12 +213,13 @@ export class JobService {
     logger.info(`Executing cleanup job: ${job.name}`);
     
     // Clean up deleted files older than retention period
-    const retentionDays = job.config.retentionDays || 30;
+    const retentionDays = parseInt(job.config.retentionDays) || 30;
     
     await query(
       `DELETE FROM files 
        WHERE is_deleted = true 
-       AND deleted_at < NOW() - INTERVAL '${retentionDays} days'`
+       AND deleted_at < NOW() - INTERVAL '1 days' * $1`,
+      [retentionDays]
     );
 
     // Clean up expired share links
