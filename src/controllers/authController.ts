@@ -1,11 +1,10 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
+import { Request, Response } from 'express';
 import authService from '../services/authService';
 import { query } from '../config/database';
 import logger from '../utils/logger';
 
 export class AuthController {
-  async register(req: AuthRequest, res: Response) {
+  async register(req: Request, res: Response): Promise<void> {
     try {
       const { email, password, username, full_name } = req.body;
 
@@ -38,10 +37,11 @@ export class AuthController {
     } catch (error: any) {
       logger.error(`Registration error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async login(req: AuthRequest, res: Response) {
+  async login(req: Request, res: Response): Promise<void> {
     try {
       const { email, password } = req.body;
 
@@ -56,11 +56,12 @@ export class AuthController {
       logger.info(`User logged in: ${email}`);
 
       if (result.requiresTwoFactor) {
-        return res.json({
+        res.json({
           message: 'Two-factor authentication required',
           requiresTwoFactor: true,
           userId: result.user.id,
         });
+        return;
       }
 
       res.json({
@@ -77,10 +78,11 @@ export class AuthController {
     } catch (error: any) {
       logger.error(`Login error: ${error.message}`);
       res.status(401).json({ error: error.message });
+        return;
     }
   }
 
-  async verifyTwoFactor(req: AuthRequest, res: Response) {
+  async verifyTwoFactor(req: Request, res: Response): Promise<void> {
     try {
       const { userId, token } = req.body;
 
@@ -94,16 +96,18 @@ export class AuthController {
     } catch (error: any) {
       logger.error(`2FA verification error: ${error.message}`);
       res.status(401).json({ error: error.message });
+        return;
     }
   }
 
-  async setupTwoFactor(req: AuthRequest, res: Response) {
+  async setupTwoFactor(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
-      const result = await authService.setupTwoFactor(req.user.userId);
+      const result = await authService.setupTwoFactor(req.user!.userId);
 
       res.json({
         message: 'Two-factor setup initiated',
@@ -113,79 +117,89 @@ export class AuthController {
     } catch (error: any) {
       logger.error(`2FA setup error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async enableTwoFactor(req: AuthRequest, res: Response) {
+  async enableTwoFactor(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { token } = req.body;
 
-      await authService.enableTwoFactor(req.user.userId, token);
+      await authService.enableTwoFactor(req.user!.userId, token);
 
       res.json({ message: 'Two-factor authentication enabled' });
     } catch (error: any) {
       logger.error(`2FA enable error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async disableTwoFactor(req: AuthRequest, res: Response) {
+  async disableTwoFactor(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
-      await authService.disableTwoFactor(req.user.userId);
+      await authService.disableTwoFactor(req.user!.userId);
 
       res.json({ message: 'Two-factor authentication disabled' });
     } catch (error: any) {
       logger.error(`2FA disable error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async changePassword(req: AuthRequest, res: Response) {
+  async changePassword(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { oldPassword, newPassword } = req.body;
 
-      await authService.changePassword(req.user.userId, oldPassword, newPassword);
+      await authService.changePassword(req.user!.userId, oldPassword, newPassword);
 
       res.json({ message: 'Password changed successfully' });
     } catch (error: any) {
       logger.error(`Password change error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async getProfile(req: AuthRequest, res: Response) {
+  async getProfile(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const result = await query(
         `SELECT id, email, username, full_name, role, storage_quota, storage_used, 
          two_factor_enabled, is_verified, created_at 
          FROM users WHERE id = $1`,
-        [req.user.userId]
+        [req.user!.userId]
       );
 
       if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'User not found' });
+        res.status(404).json({ error: 'User not found' });
+        return;
       }
 
       res.json({ user: result.rows[0] });
     } catch (error: any) {
       logger.error(`Get profile error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 }

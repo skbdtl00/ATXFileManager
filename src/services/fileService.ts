@@ -3,7 +3,6 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { query } from '../config/database';
 import { File } from '../types';
-import { hashFile } from '../utils/crypto';
 import { config } from '../config/env';
 import sharp from 'sharp';
 

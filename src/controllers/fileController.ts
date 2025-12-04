@@ -1,24 +1,22 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
+import { Request, Response } from 'express';
 import fileService from '../services/fileService';
-import storageService from '../services/storageService';
-import archiveService from '../services/archiveService';
 import logger from '../utils/logger';
 import path from 'path';
 import fs from 'fs/promises';
 import { config } from '../config/env';
-import crypto from 'crypto';
 import { query } from '../config/database';
 
 export class FileController {
-  async uploadFile(req: AuthRequest, res: Response) {
+  async uploadFile(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
+        res.status(400).json({ error: 'No file uploaded' });
+        return;
       }
 
       const { parentId } = req.body;
@@ -26,18 +24,19 @@ export class FileController {
       // Check storage quota
       const userResult = await query(
         'SELECT storage_used, storage_quota FROM users WHERE id = $1',
-        [req.user.userId]
+        [req.user!.userId]
       );
 
       const user = userResult.rows[0];
       if (user.storage_used + req.file.size > user.storage_quota) {
         // Delete uploaded file
         await fs.unlink(req.file.path);
-        return res.status(400).json({ error: 'Storage quota exceeded' });
+        res.status(400).json({ error: 'Storage quota exceeded' });
+        return;
       }
 
       const file = await fileService.createFile({
-        userId: req.user.userId,
+        userId: req.user!.userId,
         parentId: parentId || undefined,
         name: req.file.originalname,
         type: 'file',
@@ -58,10 +57,10 @@ export class FileController {
       // Log activity
       await query(
         'INSERT INTO activity_logs (user_id, file_id, action, details) VALUES ($1, $2, $3, $4)',
-        [req.user.userId, file.id, 'upload', { filename: file.name, size: file.size }]
+        [req.user!.userId, file.id, 'upload', { filename: file.name, size: file.size }]
       );
 
-      logger.info(`File uploaded: ${file.name} by ${req.user.email}`);
+      logger.info(`File uploaded: ${file.name} by ${req.user!.email}`);
 
       res.status(201).json({
         message: 'File uploaded successfully',
@@ -70,19 +69,21 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Upload error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async getFiles(req: AuthRequest, res: Response) {
+  async getFiles(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { parentId } = req.query;
 
       const files = await fileService.getUserFiles(
-        req.user.userId,
+        req.user!.userId,
         parentId as string | undefined
       );
 
@@ -90,46 +91,53 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Get files error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async getFile(req: AuthRequest, res: Response) {
+  async getFile(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { id } = req.params;
 
       const file = await fileService.getFile(id);
 
-      if (file.user_id !== req.user.userId) {
-        return res.status(403).json({ error: 'Access denied' });
+      if (file.user_id !== req.user!.userId) {
+        res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       res.json({ file });
     } catch (error: any) {
       logger.error(`Get file error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async downloadFile(req: AuthRequest, res: Response) {
+  async downloadFile(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { id } = req.params;
 
       const file = await fileService.getFile(id);
 
-      if (file.user_id !== req.user.userId) {
-        return res.status(403).json({ error: 'Access denied' });
+      if (file.user_id !== req.user!.userId) {
+        res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       if (file.type === 'folder') {
-        return res.status(400).json({ error: 'Cannot download a folder directly' });
+        res.status(400).json({ error: 'Cannot download a folder directly' });
+        return;
       }
 
       const filePath = path.join(config.storage.path, file.path);
@@ -137,26 +145,28 @@ export class FileController {
       // Log activity
       await query(
         'INSERT INTO activity_logs (user_id, file_id, action) VALUES ($1, $2, $3)',
-        [req.user.userId, file.id, 'download']
+        [req.user!.userId, file.id, 'download']
       );
 
       res.download(filePath, file.name);
     } catch (error: any) {
       logger.error(`Download error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async createFolder(req: AuthRequest, res: Response) {
+  async createFolder(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { name, parentId } = req.body;
 
       const folder = await fileService.createFile({
-        userId: req.user.userId,
+        userId: req.user!.userId,
         parentId: parentId || undefined,
         name,
         type: 'folder',
@@ -165,7 +175,7 @@ export class FileController {
       // Log activity
       await query(
         'INSERT INTO activity_logs (user_id, file_id, action, details) VALUES ($1, $2, $3, $4)',
-        [req.user.userId, folder.id, 'create_folder', { name }]
+        [req.user!.userId, folder.id, 'create_folder', { name }]
       );
 
       res.status(201).json({
@@ -175,13 +185,15 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Create folder error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async renameFile(req: AuthRequest, res: Response) {
+  async renameFile(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { id } = req.params;
@@ -189,8 +201,9 @@ export class FileController {
 
       const file = await fileService.getFile(id);
 
-      if (file.user_id !== req.user.userId) {
-        return res.status(403).json({ error: 'Access denied' });
+      if (file.user_id !== req.user!.userId) {
+        res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       const updatedFile = await fileService.updateFile(id, { name });
@@ -198,7 +211,7 @@ export class FileController {
       // Log activity
       await query(
         'INSERT INTO activity_logs (user_id, file_id, action, details) VALUES ($1, $2, $3, $4)',
-        [req.user.userId, file.id, 'rename', { oldName: file.name, newName: name }]
+        [req.user!.userId, file.id, 'rename', { oldName: file.name, newName: name }]
       );
 
       res.json({
@@ -208,13 +221,15 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Rename error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async deleteFile(req: AuthRequest, res: Response) {
+  async deleteFile(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { id } = req.params;
@@ -222,8 +237,9 @@ export class FileController {
 
       const file = await fileService.getFile(id);
 
-      if (file.user_id !== req.user.userId) {
-        return res.status(403).json({ error: 'Access denied' });
+      if (file.user_id !== req.user!.userId) {
+        res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       await fileService.deleteFile(id, permanent === 'true');
@@ -231,20 +247,22 @@ export class FileController {
       // Log activity
       await query(
         'INSERT INTO activity_logs (user_id, file_id, action, details) VALUES ($1, $2, $3, $4)',
-        [req.user.userId, file.id, permanent === 'true' ? 'delete_permanent' : 'delete', { name: file.name }]
+        [req.user!.userId, file.id, permanent === 'true' ? 'delete_permanent' : 'delete', { name: file.name }]
       );
 
       res.json({ message: 'File deleted successfully' });
     } catch (error: any) {
       logger.error(`Delete error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async moveFile(req: AuthRequest, res: Response) {
+  async moveFile(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { id } = req.params;
@@ -252,8 +270,9 @@ export class FileController {
 
       const file = await fileService.getFile(id);
 
-      if (file.user_id !== req.user.userId) {
-        return res.status(403).json({ error: 'Access denied' });
+      if (file.user_id !== req.user!.userId) {
+        res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       const movedFile = await fileService.moveFile(id, targetParentId);
@@ -261,7 +280,7 @@ export class FileController {
       // Log activity
       await query(
         'INSERT INTO activity_logs (user_id, file_id, action, details) VALUES ($1, $2, $3, $4)',
-        [req.user.userId, file.id, 'move', { name: file.name }]
+        [req.user!.userId, file.id, 'move', { name: file.name }]
       );
 
       res.json({
@@ -271,13 +290,15 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Move error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async copyFile(req: AuthRequest, res: Response) {
+  async copyFile(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { id } = req.params;
@@ -285,16 +306,17 @@ export class FileController {
 
       const file = await fileService.getFile(id);
 
-      if (file.user_id !== req.user.userId) {
-        return res.status(403).json({ error: 'Access denied' });
+      if (file.user_id !== req.user!.userId) {
+        res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
-      const copiedFile = await fileService.copyFile(id, targetParentId, req.user.userId);
+      const copiedFile = await fileService.copyFile(id, targetParentId, req.user!.userId);
 
       // Log activity
       await query(
         'INSERT INTO activity_logs (user_id, file_id, action, details) VALUES ($1, $2, $3, $4)',
-        [req.user.userId, file.id, 'copy', { name: file.name }]
+        [req.user!.userId, file.id, 'copy', { name: file.name }]
       );
 
       res.json({
@@ -304,42 +326,48 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Copy error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async searchFiles(req: AuthRequest, res: Response) {
+  async searchFiles(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { q } = req.query;
 
       if (!q) {
-        return res.status(400).json({ error: 'Search query required' });
+        res.status(400).json({ error: 'Search query required' });
+        return;
       }
 
-      const files = await fileService.searchFiles(req.user.userId, q as string);
+      const files = await fileService.searchFiles(req.user!.userId, q as string);
 
       res.json({ files });
     } catch (error: any) {
       logger.error(`Search error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async starFile(req: AuthRequest, res: Response) {
+  async starFile(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { id } = req.params;
 
       const file = await fileService.getFile(id);
 
-      if (file.user_id !== req.user.userId) {
-        return res.status(403).json({ error: 'Access denied' });
+      if (file.user_id !== req.user!.userId) {
+        res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       const updatedFile = await fileService.updateFile(id, { is_starred: !file.is_starred });
@@ -351,25 +379,29 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Star error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async getFolderSize(req: AuthRequest, res: Response) {
+  async getFolderSize(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { id } = req.params;
 
       const file = await fileService.getFile(id);
 
-      if (file.user_id !== req.user.userId) {
-        return res.status(403).json({ error: 'Access denied' });
+      if (file.user_id !== req.user!.userId) {
+        res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       if (file.type !== 'folder') {
-        return res.status(400).json({ error: 'Not a folder' });
+        res.status(400).json({ error: 'Not a folder' });
+        return;
       }
 
       const size = await fileService.calculateFolderSize(id);
@@ -378,13 +410,15 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Get folder size error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async addTag(req: AuthRequest, res: Response) {
+  async addTag(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { id } = req.params;
@@ -392,8 +426,9 @@ export class FileController {
 
       const file = await fileService.getFile(id);
 
-      if (file.user_id !== req.user.userId) {
-        return res.status(403).json({ error: 'Access denied' });
+      if (file.user_id !== req.user!.userId) {
+        res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       await fileService.addTag(id, tag);
@@ -402,21 +437,24 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Add tag error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async getTags(req: AuthRequest, res: Response) {
+  async getTags(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { id } = req.params;
 
       const file = await fileService.getFile(id);
 
-      if (file.user_id !== req.user.userId) {
-        return res.status(403).json({ error: 'Access denied' });
+      if (file.user_id !== req.user!.userId) {
+        res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       const tags = await fileService.getTags(id);
@@ -425,21 +463,24 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Get tags error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async removeTag(req: AuthRequest, res: Response) {
+  async removeTag(req: Request, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
+        res.status(401).json({ error: 'Authentication required' });
+        return;
       }
 
       const { id, tag } = req.params;
 
       const file = await fileService.getFile(id);
 
-      if (file.user_id !== req.user.userId) {
-        return res.status(403).json({ error: 'Access denied' });
+      if (file.user_id !== req.user!.userId) {
+        res.status(403).json({ error: 'Access denied' });
+        return;
       }
 
       await fileService.removeTag(id, tag);
@@ -448,6 +489,7 @@ export class FileController {
     } catch (error: any) {
       logger.error(`Remove tag error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 }

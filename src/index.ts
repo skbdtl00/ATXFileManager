@@ -5,7 +5,7 @@ import compression from 'compression';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import { config } from './config/env';
-import { connectRedis } from './config/redis';
+import { connectRedis, redisClient } from './config/redis';
 import pool from './config/database';
 import logger from './utils/logger';
 import { errorHandler, notFound } from './middleware/errorHandler';
@@ -41,7 +41,7 @@ app.use(morgan('combined', {
 app.use('/api', generalLimiter);
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -72,7 +72,9 @@ const startServer = async () => {
     logger.info('✅ Scheduled jobs loaded');
 
     // Create necessary directories
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const fs = require('fs');
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const path = require('path');
     
     const dirs = [

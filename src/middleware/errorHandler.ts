@@ -6,7 +6,8 @@ export interface AppError extends Error {
   isOperational?: boolean;
 }
 
-export const errorHandler = (err: AppError, req: Request, res: Response, next: NextFunction) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const errorHandler = (err: AppError, req: Request, res: Response, _next: NextFunction) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Internal Server Error';
 
@@ -24,6 +25,6 @@ export const errorHandler = (err: AppError, req: Request, res: Response, next: N
   });
 };
 
-export const notFound = (req: Request, res: Response) => {
+export const notFound = (_req: Request, res: Response) => {
   res.status(404).json({ error: 'Route not found' });
 };

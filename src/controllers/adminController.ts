@@ -1,10 +1,9 @@
-import { Response } from 'express';
-import { AuthRequest } from '../middleware/auth';
+import { Request, Response } from 'express';
 import { query } from '../config/database';
 import logger from '../utils/logger';
 
 export class AdminController {
-  async getDashboard(req: AuthRequest, res: Response) {
+  async getDashboard(_req: Request, res: Response): Promise<void> {
     try {
       // Get system statistics
       const userStats = await query(
@@ -52,10 +51,11 @@ export class AdminController {
     } catch (error: any) {
       logger.error(`Admin dashboard error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async listUsers(req: AuthRequest, res: Response) {
+  async listUsers(req: Request, res: Response): Promise<void> {
     try {
       const { page = 1, limit = 20, search, role } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
@@ -113,10 +113,11 @@ export class AdminController {
     } catch (error: any) {
       logger.error(`List users error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async updateUser(req: AuthRequest, res: Response) {
+  async updateUser(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { role, storage_quota, is_active } = req.body;
@@ -144,7 +145,8 @@ export class AdminController {
       }
 
       if (updates.length === 0) {
-        return res.status(400).json({ error: 'No valid updates provided' });
+        res.status(400).json({ error: 'No valid updates provided' });
+        return;
       }
 
       params.push(id);
@@ -154,7 +156,8 @@ export class AdminController {
       );
 
       if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'User not found' });
+        res.status(404).json({ error: 'User not found' });
+        return;
       }
 
       // Log audit
@@ -170,17 +173,19 @@ export class AdminController {
     } catch (error: any) {
       logger.error(`Update user error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async deleteUser(req: AuthRequest, res: Response) {
+  async deleteUser(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
       // Check if user exists
       const userResult = await query('SELECT * FROM users WHERE id = $1', [id]);
       if (userResult.rows.length === 0) {
-        return res.status(404).json({ error: 'User not found' });
+        res.status(404).json({ error: 'User not found' });
+        return;
       }
 
       // Delete user (cascade will delete related data)
@@ -198,10 +203,11 @@ export class AdminController {
     } catch (error: any) {
       logger.error(`Delete user error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async getAuditLogs(req: AuthRequest, res: Response) {
+  async getAuditLogs(req: Request, res: Response): Promise<void> {
     try {
       const { page = 1, limit = 50, action, userId } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
@@ -259,10 +265,11 @@ export class AdminController {
     } catch (error: any) {
       logger.error(`Get audit logs error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async getSystemStats(req: AuthRequest, res: Response) {
+  async getSystemStats(_req: Request, res: Response): Promise<void> {
     try {
       const stats = await query(`
         SELECT 
@@ -279,10 +286,11 @@ export class AdminController {
     } catch (error: any) {
       logger.error(`Get system stats error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 
-  async getStorageReport(req: AuthRequest, res: Response) {
+  async getStorageReport(_req: Request, res: Response): Promise<void> {
     try {
       const report = await query(`
         SELECT 
@@ -304,6 +312,7 @@ export class AdminController {
     } catch (error: any) {
       logger.error(`Get storage report error: ${error.message}`);
       res.status(400).json({ error: error.message });
+        return;
     }
   }
 }
