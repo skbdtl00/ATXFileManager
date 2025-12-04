@@ -197,6 +197,11 @@ setup_database() {
     sudo -u postgres psql -c "CREATE USER atxuser WITH PASSWORD 'atxpassword';" 2>/dev/null || log_warn "User may already exist"
     sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE atxfilemanager TO atxuser;" 2>/dev/null
     
+    # Grant schema privileges (required for PostgreSQL 15+)
+    sudo -u postgres psql -d atxfilemanager -c "GRANT ALL ON SCHEMA public TO atxuser;" 2>/dev/null
+    sudo -u postgres psql -d atxfilemanager -c "GRANT CREATE ON SCHEMA public TO atxuser;" 2>/dev/null
+    sudo -u postgres psql -d atxfilemanager -c "ALTER SCHEMA public OWNER TO atxuser;" 2>/dev/null
+    
     log_info "Database setup complete"
 }
 
